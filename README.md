@@ -1,4 +1,5 @@
 # Wallet系统后端
+Database course assignment: wallet back-end with basic transfer and receipt function based on ssm
 ## 项目介绍
 高级数据库技术大作业
 ## 技术路线
@@ -10,3 +11,5 @@ SSM+MySQL
 对于未注册用户的转账等一系列操作逻辑
 ## 待实现功能
 群收款
+
+
