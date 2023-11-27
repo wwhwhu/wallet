@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.db.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="com.db.entity.User">
+    <id column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="ssn" jdbcType="VARCHAR" property="ssn" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="balance" jdbcType="DECIMAL" property="balance" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    user_id, name, ssn, password, balance
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from User
+    where user_id = #{userId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from User
+    where user_id = #{userId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.db.entity.User" useGeneratedKeys="true" keyProperty="user_id">
+    insert into User (user_id, name, ssn, 
+      password, balance)
+    values (#{userId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{ssn,jdbcType=VARCHAR}, 
+      #{password,jdbcType=VARCHAR}, #{balance,jdbcType=DECIMAL})
+  </insert>
+  <insert id="insertSelective" parameterType="com.db.entity.User">
+    insert into User
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="ssn != null">
+        ssn,
+      </if>
+      <if test="password != null">
+        password,
+      </if>
+      <if test="balance != null">
+        balance,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="ssn != null">
+        #{ssn,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="balance != null">
+        #{balance,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.db.entity.User">
+    update User
+    <set>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="ssn != null">
+        ssn = #{ssn,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        password = #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="balance != null">
+        balance = #{balance,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where user_id = #{userId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.db.entity.User">
+    update User
+    set name = #{name,jdbcType=VARCHAR},
+      ssn = #{ssn,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR},
+      balance = #{balance,jdbcType=DECIMAL}
+    where user_id = #{userId,jdbcType=INTEGER}
+  </update>
+  <select id="selectByEmail" parameterType="String" resultType="com.db.entity.User">
+    SELECT u.* FROM User u JOIN Email e ON u.user_id = e.user_id
+    WHERE e.email_address = #{email} and e.is_registered = true and e.is_email_verified = true
+  </select>
+  <select id="selectByPhoneNumber" parameterType="String" resultType="com.db.entity.User">
+    SELECT u.* FROM User u JOIN PhoneNumber p ON u.user_id = p.user_id
+    WHERE p.phone_number = #{phone_number} and p.is_registered = true and p.is_phone_verified = true
+  </select>
+  <select id="findBySSN" parameterType="String" resultType="INTEGER">
+    SELECT user_id FROM User u
+    WHERE u.ssn = #{ssn}
+  </select>
+  <select id="searchAllPersonalInfo" parameterType="java.lang.Integer" resultType="com.db.util.PersonalAll">
+    SELECT
+      *,
+      t2.is_registered AS is_email_registered,
+      t3.is_registered AS is_phone_registered
+    FROM
+      User t1
+        LEFT JOIN
+      Email t2 ON t1.user_id = t2.user_id
+        LEFT JOIN
+      PhoneNumber t3 ON t1.user_id = t3.user_id
+    WHERE t1.user_id = #{userId,jdbcType=INTEGER}
+  </select>
+</mapper>

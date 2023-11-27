@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.db.mapper.EmailMapper">
+  <resultMap id="BaseResultMap" type="com.db.entity.Email">
+    <id column="email_id" jdbcType="INTEGER" property="emailId" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="email_address" jdbcType="VARCHAR" property="emailAddress" />
+    <result column="is_registered" jdbcType="BIT" property="isRegistered" />
+    <result column="is_email_verified" jdbcType="BIT" property="isEmailVerified" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    email_id, user_id, email_address, is_registered, is_email_verified
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from Email
+    where email_id = #{emailId,jdbcType=INTEGER}
+  </select>
+  <select id="selectByEmailAddress" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from Email
+    where email_address = #{email_address,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from Email
+    where email_id = #{emailId,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByEmailAddr" parameterType="com.db.entity.Email">
+    delete from Email
+    where user_id= #{userId,jdbcType=INTEGER} and email_address = #{emailAddress,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.db.entity.Email" useGeneratedKeys="true" keyProperty="emailId">
+    insert into Email (email_id, user_id, email_address, 
+      is_registered, is_email_verified)
+    values (#{emailId,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{emailAddress,jdbcType=VARCHAR}, 
+      #{isRegistered,jdbcType=BIT}, #{isEmailVerified,jdbcType=BIT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.db.entity.Email">
+    insert into Email
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="emailId != null">
+        email_id,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="emailAddress != null">
+        email_address,
+      </if>
+      <if test="isRegistered != null">
+        is_registered,
+      </if>
+      <if test="isEmailVerified != null">
+        is_email_verified,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="emailId != null">
+        #{emailId,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="emailAddress != null">
+        #{emailAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="isRegistered != null">
+        #{isRegistered,jdbcType=BIT},
+      </if>
+      <if test="isEmailVerified != null">
+        #{isEmailVerified,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.db.entity.Email">
+    update Email
+    <set>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="emailAddress != null">
+        email_address = #{emailAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="isRegistered != null">
+        is_registered = #{isRegistered,jdbcType=BIT},
+      </if>
+      <if test="isEmailVerified != null">
+        is_email_verified = #{isEmailVerified,jdbcType=BIT},
+      </if>
+    </set>
+    where email_id = #{emailId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.db.entity.Email">
+    update Email
+    set user_id = #{userId,jdbcType=INTEGER},
+      email_address = #{emailAddress,jdbcType=VARCHAR},
+      is_registered = #{isRegistered,jdbcType=BIT},
+      is_email_verified = #{isEmailVerified,jdbcType=BIT}
+    where email_id = #{emailId,jdbcType=INTEGER}
+  </update>
+  <update id="updateEmailUser" parameterType="com.db.entity.Email"  useGeneratedKeys="true" keyProperty="emailID">
+    update Email
+    set user_id = #{userId,jdbcType=INTEGER},
+        is_registered = #{isRegistered,jdbcType=BIT},
+        is_email_verified = #{isEmailVerified,jdbcType=BIT}
+    where email_address = #{emailAddress,jdbcType=VARCHAR}
+  </update>
+</mapper>

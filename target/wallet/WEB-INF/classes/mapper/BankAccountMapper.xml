@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.db.mapper.BankAccountMapper">
+  <resultMap id="BaseResultMap" type="com.db.entity.BankAccount">
+    <id column="account_id" jdbcType="INTEGER" property="accountId" />
+    <result column="bank_id" jdbcType="VARCHAR" property="bankId" />
+    <result column="account_number" jdbcType="VARCHAR" property="accountNumber" />
+    <result column="is_joint" jdbcType="BIT" property="isJoint" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    account_id, bank_id, account_number, is_joint
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from BankAccount
+    where account_id = #{accountId,jdbcType=INTEGER}
+  </select>
+  <select id="selectByAccountNum" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from BankAccount
+    where account_number = #{accountNumber,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from BankAccount
+    where account_id = #{accountId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.db.entity.BankAccount" useGeneratedKeys="true" keyProperty="account_id">
+    insert into BankAccount (account_id, bank_id, account_number, 
+      is_joint)
+    values (#{accountId,jdbcType=INTEGER}, #{bankId,jdbcType=VARCHAR}, #{accountNumber,jdbcType=VARCHAR}, 
+      #{isJoint,jdbcType=BIT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.db.entity.BankAccount">
+    insert into BankAccount
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="accountId != null">
+        account_id,
+      </if>
+      <if test="bankId != null">
+        bank_id,
+      </if>
+      <if test="accountNumber != null">
+        account_number,
+      </if>
+      <if test="isJoint != null">
+        is_joint,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="accountId != null">
+        #{accountId,jdbcType=INTEGER},
+      </if>
+      <if test="bankId != null">
+        #{bankId,jdbcType=VARCHAR},
+      </if>
+      <if test="accountNumber != null">
+        #{accountNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="isJoint != null">
+        #{isJoint,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.db.entity.BankAccount">
+    update BankAccount
+    <set>
+      <if test="bankId != null">
+        bank_id = #{bankId,jdbcType=VARCHAR},
+      </if>
+      <if test="accountNumber != null">
+        account_number = #{accountNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="isJoint != null">
+        is_joint = #{isJoint,jdbcType=BIT},
+      </if>
+    </set>
+    where account_id = #{accountId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.db.entity.BankAccount">
+    update BankAccount
+    set bank_id = #{bankId,jdbcType=VARCHAR},
+      account_number = #{accountNumber,jdbcType=VARCHAR},
+      is_joint = #{isJoint,jdbcType=BIT}
+    where account_id = #{accountId,jdbcType=INTEGER}
+  </update>
+</mapper>

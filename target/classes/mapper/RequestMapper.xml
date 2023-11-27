@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.db.mapper.RequestMapper">
+  <resultMap id="BaseResultMap" type="com.db.entity.Request">
+    <id column="request_id" jdbcType="INTEGER" property="requestId" />
+    <result column="requester_user_id" jdbcType="INTEGER" property="requesterUserId" />
+    <result column="total_amount" jdbcType="DECIMAL" property="totalAmount" />
+    <result column="request_time" jdbcType="TIMESTAMP" property="requestTime" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.db.entity.Request">
+    <result column="memo" jdbcType="LONGVARCHAR" property="memo" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    request_id, requester_user_id, total_amount, request_time
+  </sql>
+  <sql id="Blob_Column_List">
+    memo
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from Request
+    where request_id = #{requestId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from Request
+    where request_id = #{requestId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.db.entity.Request">
+    insert into Request (request_id, requester_user_id, total_amount, 
+      request_time, memo)
+    values (#{requestId,jdbcType=INTEGER}, #{requesterUserId,jdbcType=INTEGER}, #{totalAmount,jdbcType=DECIMAL}, 
+      #{requestTime,jdbcType=TIMESTAMP}, #{memo,jdbcType=LONGVARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.db.entity.Request">
+    insert into Request
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="requestId != null">
+        request_id,
+      </if>
+      <if test="requesterUserId != null">
+        requester_user_id,
+      </if>
+      <if test="totalAmount != null">
+        total_amount,
+      </if>
+      <if test="requestTime != null">
+        request_time,
+      </if>
+      <if test="memo != null">
+        memo,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="requestId != null">
+        #{requestId,jdbcType=INTEGER},
+      </if>
+      <if test="requesterUserId != null">
+        #{requesterUserId,jdbcType=INTEGER},
+      </if>
+      <if test="totalAmount != null">
+        #{totalAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="requestTime != null">
+        #{requestTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="memo != null">
+        #{memo,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.db.entity.Request">
+    update Request
+    <set>
+      <if test="requesterUserId != null">
+        requester_user_id = #{requesterUserId,jdbcType=INTEGER},
+      </if>
+      <if test="totalAmount != null">
+        total_amount = #{totalAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="requestTime != null">
+        request_time = #{requestTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="memo != null">
+        memo = #{memo,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where request_id = #{requestId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.db.entity.Request">
+    update Request
+    set requester_user_id = #{requesterUserId,jdbcType=INTEGER},
+      total_amount = #{totalAmount,jdbcType=DECIMAL},
+      request_time = #{requestTime,jdbcType=TIMESTAMP},
+      memo = #{memo,jdbcType=LONGVARCHAR}
+    where request_id = #{requestId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.db.entity.Request">
+    update Request
+    set requester_user_id = #{requesterUserId,jdbcType=INTEGER},
+      total_amount = #{totalAmount,jdbcType=DECIMAL},
+      request_time = #{requestTime,jdbcType=TIMESTAMP}
+    where request_id = #{requestId,jdbcType=INTEGER}
+  </update>
+</mapper>

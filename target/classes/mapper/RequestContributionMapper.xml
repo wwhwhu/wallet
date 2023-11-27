@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.db.mapper.RequestContributionMapper">
+  <resultMap id="BaseResultMap" type="com.db.entity.RequestContribution">
+    <id column="contribution_id" jdbcType="INTEGER" property="contributionId" />
+    <result column="request_id" jdbcType="INTEGER" property="requestId" />
+    <result column="sender_phone_number" jdbcType="VARCHAR" property="senderPhoneNumber" />
+    <result column="sender_email_id" jdbcType="INTEGER" property="senderEmailId" />
+    <result column="transaction_id" jdbcType="INTEGER" property="transactionId" />
+    <result column="contribution_amount" jdbcType="DECIMAL" property="contributionAmount" />
+    <result column="is_contributed" jdbcType="BIT" property="isContributed" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    contribution_id, request_id, sender_phone_number, sender_email_id, transaction_id, 
+    contribution_amount, is_contributed
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from RequestContribution
+    where contribution_id = #{contributionId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from RequestContribution
+    where contribution_id = #{contributionId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.db.entity.RequestContribution">
+    insert into RequestContribution (contribution_id, request_id, sender_phone_number, 
+      sender_email_id, transaction_id, contribution_amount, 
+      is_contributed)
+    values (#{contributionId,jdbcType=INTEGER}, #{requestId,jdbcType=INTEGER}, #{senderPhoneNumber,jdbcType=VARCHAR}, 
+      #{senderEmailId,jdbcType=INTEGER}, #{transactionId,jdbcType=INTEGER}, #{contributionAmount,jdbcType=DECIMAL}, 
+      #{isContributed,jdbcType=BIT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.db.entity.RequestContribution">
+    insert into RequestContribution
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="contributionId != null">
+        contribution_id,
+      </if>
+      <if test="requestId != null">
+        request_id,
+      </if>
+      <if test="senderPhoneNumber != null">
+        sender_phone_number,
+      </if>
+      <if test="senderEmailId != null">
+        sender_email_id,
+      </if>
+      <if test="transactionId != null">
+        transaction_id,
+      </if>
+      <if test="contributionAmount != null">
+        contribution_amount,
+      </if>
+      <if test="isContributed != null">
+        is_contributed,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="contributionId != null">
+        #{contributionId,jdbcType=INTEGER},
+      </if>
+      <if test="requestId != null">
+        #{requestId,jdbcType=INTEGER},
+      </if>
+      <if test="senderPhoneNumber != null">
+        #{senderPhoneNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="senderEmailId != null">
+        #{senderEmailId,jdbcType=INTEGER},
+      </if>
+      <if test="transactionId != null">
+        #{transactionId,jdbcType=INTEGER},
+      </if>
+      <if test="contributionAmount != null">
+        #{contributionAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="isContributed != null">
+        #{isContributed,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.db.entity.RequestContribution">
+    update RequestContribution
+    <set>
+      <if test="requestId != null">
+        request_id = #{requestId,jdbcType=INTEGER},
+      </if>
+      <if test="senderPhoneNumber != null">
+        sender_phone_number = #{senderPhoneNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="senderEmailId != null">
+        sender_email_id = #{senderEmailId,jdbcType=INTEGER},
+      </if>
+      <if test="transactionId != null">
+        transaction_id = #{transactionId,jdbcType=INTEGER},
+      </if>
+      <if test="contributionAmount != null">
+        contribution_amount = #{contributionAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="isContributed != null">
+        is_contributed = #{isContributed,jdbcType=BIT},
+      </if>
+    </set>
+    where contribution_id = #{contributionId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.db.entity.RequestContribution">
+    update RequestContribution
+    set request_id = #{requestId,jdbcType=INTEGER},
+      sender_phone_number = #{senderPhoneNumber,jdbcType=VARCHAR},
+      sender_email_id = #{senderEmailId,jdbcType=INTEGER},
+      transaction_id = #{transactionId,jdbcType=INTEGER},
+      contribution_amount = #{contributionAmount,jdbcType=DECIMAL},
+      is_contributed = #{isContributed,jdbcType=BIT}
+    where contribution_id = #{contributionId,jdbcType=INTEGER}
+  </update>
+</mapper>

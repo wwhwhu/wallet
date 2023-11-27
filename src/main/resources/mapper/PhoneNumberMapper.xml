@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.db.mapper.PhoneNumberMapper">
+  <resultMap id="BaseResultMap" type="com.db.entity.PhoneNumber">
+    <id column="phone_number" jdbcType="VARCHAR" property="phoneNumber" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="is_registered" jdbcType="BIT" property="isRegistered" />
+    <result column="is_phone_verified" jdbcType="BIT" property="isPhoneVerified" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    phone_number, user_id, is_registered, is_phone_verified
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from PhoneNumber
+    where phone_number = #{phoneNumber,jdbcType=VARCHAR}
+  </select>
+  <select id="selectPhoneByUser" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from PhoneNumber
+    where user_id = #{userId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from PhoneNumber
+    where phone_number = #{phoneNumber,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByPhoneNumber" parameterType="com.db.entity.PhoneNumber">
+    delete from PhoneNumber
+    where phone_number = #{phoneNumber,jdbcType=VARCHAR} and user_id = #{userId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.db.entity.PhoneNumber">
+    insert into PhoneNumber (phone_number, user_id, is_registered, 
+      is_phone_verified)
+    values (#{phoneNumber,jdbcType=VARCHAR}, #{userId,jdbcType=INTEGER}, #{isRegistered,jdbcType=BIT}, 
+      #{isPhoneVerified,jdbcType=BIT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.db.entity.PhoneNumber">
+    insert into PhoneNumber
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="phoneNumber != null">
+        phone_number,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="isRegistered != null">
+        is_registered,
+      </if>
+      <if test="isPhoneVerified != null">
+        is_phone_verified,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="phoneNumber != null">
+        #{phoneNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="isRegistered != null">
+        #{isRegistered,jdbcType=BIT},
+      </if>
+      <if test="isPhoneVerified != null">
+        #{isPhoneVerified,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.db.entity.PhoneNumber">
+    update PhoneNumber
+    <set>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="isRegistered != null">
+        is_registered = #{isRegistered,jdbcType=BIT},
+      </if>
+      <if test="isPhoneVerified != null">
+        is_phone_verified = #{isPhoneVerified,jdbcType=BIT},
+      </if>
+    </set>
+    where phone_number = #{phoneNumber,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.db.entity.PhoneNumber">
+    update PhoneNumber
+    set user_id = #{userId,jdbcType=INTEGER},
+      is_registered = #{isRegistered,jdbcType=BIT},
+      is_phone_verified = #{isPhoneVerified,jdbcType=BIT}
+    where phone_number = #{phoneNumber,jdbcType=VARCHAR}
+  </update>
+  <update id="updatePhoneUser" parameterType="com.db.entity.PhoneNumber">
+    update PhoneNumber
+    set user_id = #{userId,jdbcType=INTEGER},
+        is_registered = #{isRegistered,jdbcType=BIT},
+        is_phone_verified = #{isPhoneVerified,jdbcType=BIT}
+    where phone_number = #{phoneNumber,jdbcType=VARCHAR}
+  </update>
+</mapper>
