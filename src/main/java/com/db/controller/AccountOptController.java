@@ -258,7 +258,7 @@ public class AccountOptController {
                     maxIdList.add(res.get(i).getTransactionId());
                 }
             }
-            BigDecimal average = total.divide(BigDecimal.valueOf(res.size()));
+            BigDecimal average = total.divide(BigDecimal.valueOf(res.size()), BigDecimal.ROUND_CEILING);
             // 将这些统计参数放到工具类中
             MonthStatistics monthStatistics = new MonthStatistics();
             monthStatistics.setYear(Integer.parseInt(year));

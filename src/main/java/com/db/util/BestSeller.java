@@ -5,7 +5,16 @@ public class BestSeller {
     Integer senderUserId;
     Integer recipientUserId;
     String emailAddress;
-    String phoneNumber;
+
+    public String getRecipientPhoneNumber() {
+        return recipientPhoneNumber;
+    }
+
+    public void setRecipientPhoneNumber(String recipientPhoneNumber) {
+        this.recipientPhoneNumber = recipientPhoneNumber;
+    }
+
+    String recipientPhoneNumber;
     Integer amount;
 
     public Integer getTransactionId() {
@@ -40,13 +49,7 @@ public class BestSeller {
         this.emailAddress = emailAddress;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
 
     public Integer getAmount() {
         return amount;
