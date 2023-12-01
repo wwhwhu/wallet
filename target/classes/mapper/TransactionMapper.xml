@@ -98,33 +98,13 @@
     where sender_user_id = #{userId,jdbcType=INTEGER} and recipient_user_id = #{receiveId,jdbcType=INTEGER}
   </select>
   <select id="selectBestSeller" parameterType="map" resultType="com.db.util.BestSeller">
-    SELECT
-      T.transaction_id,
-      T.sender_user_id,
-      T.recipient_user_id,
-      CASE
-        WHEN T.recipient_email_id = E.email_id THEN E.email_address
-        WHEN T.recipient_email_id = D.email_id THEN D.email_address
-        ELSE NULL
-        END AS email_address,
-      T.recipient_phone_number,
-      T.amount
-    FROM
-      Transaction T
-        LEFT JOIN
-      Email E ON T.recipient_email_id = E.email_id
-        LEFT JOIN
-      DeleteEmail D ON T.recipient_email_id = D.email_id
-    WHERE
-      T.sender_user_id = #{userId,jdbcType=INTEGER}
-      AND T.transaction_start_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}
-      AND T.amount = (
-      SELECT MAX(T2.amount)
+      SELECT T2.recipient_user_id, SUM(T2.amount) AS total_amount
       FROM Transaction T2
       WHERE
         T2.sender_user_id = #{userId,jdbcType=INTEGER}
         AND T2.transaction_start_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}
-    );
+      GROUP BY T2.recipient_user_id
+      ORDER BY SUM(T2.amount) DESC;
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from Transaction

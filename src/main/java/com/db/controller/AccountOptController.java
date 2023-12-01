@@ -529,7 +529,7 @@ public class AccountOptController {
         } else if (res.size() == 0) {
             return ResponseEntity.ok("{\"status\":1,\"message\":\"查询结果为空\"}");
         } else {
-            return ResponseEntity.ok("{\"status\":0,\"data\":" + new ObjectMapper().writeValueAsString(res) + ",\"message\":\"查询成功\"}");
+            return ResponseEntity.ok("{\"status\":0,\"data\":" + new ObjectMapper().writeValueAsString(res.get(0)) + ",\"message\":\"查询成功\"}");
         }
     }
 }
