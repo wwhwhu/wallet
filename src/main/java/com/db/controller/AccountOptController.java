@@ -529,6 +529,7 @@ public class AccountOptController {
         } else if (res.size() == 0) {
             return ResponseEntity.ok("{\"status\":1,\"message\":\"查询结果为空\"}");
         } else {
+            res.get(0).setName(userService.findUserPasswordService(res.get(0).getRecipientUserId()).getName());
             return ResponseEntity.ok("{\"status\":0,\"data\":" + new ObjectMapper().writeValueAsString(res.get(0)) + ",\"message\":\"查询成功\"}");
         }
     }

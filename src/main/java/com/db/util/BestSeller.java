@@ -5,6 +5,15 @@ import java.math.BigDecimal;
 public class BestSeller {
     Integer recipientUserId;
     BigDecimal totalAmount;
+    String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Integer getRecipientUserId() {
         return recipientUserId;
