@@ -42,8 +42,8 @@ public class AccountOptController {
     public ResponseEntity<String> transaction(@RequestBody JsonNode jsonNode, HttpSession session) {
         String send_id = jsonNode.get("user_id").asText();
         String password = jsonNode.get("password").asText();
-        String email_id = jsonNode.get("email_address").asText();
-        String phone_number = jsonNode.get("phone_number").asText();
+        String email_id = jsonNode.get("email_address")==null?null:jsonNode.get("email_address").asText();
+        String phone_number = jsonNode.get("phone_number")==null?null:jsonNode.get("phone_number").asText();
         String amount = jsonNode.get("amount").asText();
         String meno = jsonNode.get("memo").asText();
         TimeZone time = TimeZone.getTimeZone("Etc/GMT-8");  //转换为中国时区
@@ -293,7 +293,7 @@ public class AccountOptController {
         int userId = userService.findBySSN(ssn);
         if(userId == 0)
         {
-            return ResponseEntity.ok("{\"status\":1,\"message\":\"无此SSN用户\"}");
+            return ResponseEntity.ok("{\"status\":1,\"message\":\"无交易记录\"}");
         }
         List<TransactionWithBLOBs> res = accountOptService.searchTransactionByUserIdService(Integer.parseInt(user_id), userId);
         if(res == null)

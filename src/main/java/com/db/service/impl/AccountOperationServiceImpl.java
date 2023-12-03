@@ -102,6 +102,8 @@ public class AccountOperationServiceImpl implements AccountOperationService {
     @Override
     public List<TransactionWithBLOBs> searchTransactionByDateRangeService(int user_id, Date start, Date end) {
         HashMap<String, Object> map = new HashMap<>();
+        // 给end加一天
+        end.setTime(end.getTime() + 24*60*60*1000);
         map.put("userId", user_id);
         map.put("startTime", start);
         map.put("endTime", end);

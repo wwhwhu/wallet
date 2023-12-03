@@ -227,7 +227,6 @@ public class UserController {
 //        String user_id = session.getAttribute("userId").toString(); // 获取用户id
         Integer user_id0 = Integer.parseInt(jsonNode.get("user_id").asText());
         String name = jsonNode.get("name").asText();
-        String newPassword = jsonNode.get("newPassword").asText();
         String oldPassword = jsonNode.get("oldPassword").asText();
         User nowUser = userService.findUserPasswordService(user_id0);
         String realPassword = nowUser.getPassword();
@@ -236,19 +235,25 @@ public class UserController {
             String jsonResponse = "{\"status\":1,\"message\":\"原密码输入错误\"}";
             return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
         }
+        String newPassword;
         // 保持原密码不变，只改变name
-        if (newPassword == null || newPassword.equals("")) {
+        if (jsonNode.get("newPassword") == null || jsonNode.get("newPassword").asText().equals("")) {
             newPassword = realPassword;
-        } else if (newPassword.equals(oldPassword)) {
-            String jsonResponse = "{\"status\":1,\"message\":\"新密码与原密码相同\"}";
-            return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
+        } else
+        {
+            newPassword = jsonNode.get("newPassword").asText();
+//            if (newPassword.equals(oldPassword)) {
+//                String jsonResponse = "{\"status\":1,\"message\":\"新密码与原密码相同\"}";
+//                return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
+//            }
         }
         if (name == null || name.equals("")) {
             name = oldName;
-        } else if (name.equals(oldName)) {
-            String jsonResponse = "{\"status\":1,\"message\":\"新用户名与原用户名相同\"}";
-            return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
         }
+//      else if (name.equals(oldName)) {
+//            String jsonResponse = "{\"status\":1,\"message\":\"未更新用户信息\"}";
+//            return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
+//        }
 //        if(user_id == null)
 //        {
 //            String jsonResponse = "{\"status\":1,\"message\":\"用户未登录\"}";
