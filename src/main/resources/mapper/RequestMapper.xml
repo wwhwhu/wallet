@@ -24,6 +24,14 @@
     from Request
     where request_id = #{requestId,jdbcType=INTEGER}
   </select>
+  <select id="selectByUserId" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
+    select
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from Request
+    where requester_user_id = #{user_id,jdbcType=INTEGER}
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from Request
     where request_id = #{requestId,jdbcType=INTEGER}
@@ -33,6 +41,10 @@
       request_time, memo)
     values (#{requestId,jdbcType=INTEGER}, #{requesterUserId,jdbcType=INTEGER}, #{totalAmount,jdbcType=DECIMAL}, 
       #{requestTime,jdbcType=TIMESTAMP}, #{memo,jdbcType=LONGVARCHAR})
+    <!-- 指定结果类型resultType，自增键返回至keyProperty，order是次序，after指在插入后获取自增键 -->
+    <selectKey resultType="int" keyProperty="requestId" order="AFTER">
+      select LAST_INSERT_ID()
+    </selectKey>
   </insert>
   <insert id="insertSelective" parameterType="com.db.entity.Request">
     insert into Request

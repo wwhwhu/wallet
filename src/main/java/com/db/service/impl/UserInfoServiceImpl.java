@@ -125,6 +125,14 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
+    public String getEmailByEmailId(Integer emailId){
+        Email res = emailMapper.selectByPrimaryKey(emailId);
+        if(res==null)
+            return null;
+        return res.getEmailAddress();
+    }
+
+    @Override
     public int registerUserService(String name, String ssn, String password, BigDecimal balance) {
         User u = new User();
         u.setName(name);

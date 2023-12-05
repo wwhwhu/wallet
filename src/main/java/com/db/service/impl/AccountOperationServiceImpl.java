@@ -1,7 +1,11 @@
 package com.db.service.impl;
 
+import com.db.entity.Request;
+import com.db.entity.RequestContribution;
 import com.db.entity.TransactionWithBLOBs;
 import com.db.entity.User;
+import com.db.mapper.RequestContributionMapper;
+import com.db.mapper.RequestMapper;
 import com.db.mapper.TransactionMapper;
 import com.db.mapper.UserMapper;
 import com.db.service.AccountOperationService;
@@ -21,12 +25,16 @@ public class AccountOperationServiceImpl implements AccountOperationService {
 
     private final TransactionMapper transactionMapper;
     private final UserMapper userMapper;
+    private final RequestMapper requestMapper;
+    private final RequestContributionMapper requestContributionMapper;
 
     @Autowired
-    public AccountOperationServiceImpl(TransactionMapper transactionMapper, UserMapper userMapper)
+    public AccountOperationServiceImpl(TransactionMapper transactionMapper, UserMapper userMapper, RequestMapper requestMapper, RequestContributionMapper requestContributionMapper)
     {
         this.transactionMapper = transactionMapper;
         this.userMapper = userMapper;
+        this.requestMapper = requestMapper;
+        this.requestContributionMapper = requestContributionMapper;
     }
 
     @Override
@@ -196,4 +204,42 @@ public class AccountOperationServiceImpl implements AccountOperationService {
         return transactionMapper.selectBestSeller(map);
     }
 
+    @Override
+    public int insertRequestService(Integer requesterUserId, BigDecimal totalAmount,Date requestTime, String memo){
+        Request request = new Request();
+        request.setRequesterUserId(requesterUserId);
+        request.setTotalAmount(totalAmount);
+        request.setRequestTime(requestTime);
+        request.setMemo(memo);
+        int res = requestMapper.insert(request);
+        if(res==0)
+            return 0;
+        return request.getRequestId();
+    }
+
+    @Override
+    public int[] insertRequestContributionService(List<RequestContribution> contributions){
+        // Integer requestId, String senderPhoneNumber, String sender_email_id, BigDecimal contribution_amount
+        int[] res = new int[contributions.size()];
+        for(int i=0;i<contributions.size();i++){
+            requestContributionMapper.insert(contributions.get(i));
+            res[i] = contributions.get(i).getContributionId();
+        }
+        return res;
+    }
+
+    @Override
+    public List<Request> searchGroupRequestForRequesterByUserIdService(Integer user_id){
+        return requestMapper.selectByUserId(user_id);
+    }
+
+    @Override
+    public Request searchGroupRequestForRequesterById(Integer requestId){
+        return requestMapper.selectByPrimaryKey(requestId);
+    }
+
+    @Override
+    public List<RequestContribution> searchGroupContributionForRequesterById(Integer requestId){
+        return requestContributionMapper.selectByRequestId(requestId);
+    }
 }

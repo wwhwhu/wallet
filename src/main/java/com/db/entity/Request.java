@@ -1,15 +1,20 @@
 package com.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
 public class Request {
+    @JsonProperty("request_id")
     private Integer requestId;
 
     private Integer requesterUserId;
 
+    @JsonProperty("total_amount")
     private BigDecimal totalAmount;
 
+    @JsonProperty("request_time")
     private Date requestTime;
 
     private String memo;

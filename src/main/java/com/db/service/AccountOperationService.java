@@ -1,11 +1,14 @@
 package com.db.service;
 
+import com.db.entity.Request;
+import com.db.entity.RequestContribution;
 import com.db.entity.Transaction;
 import com.db.entity.TransactionWithBLOBs;
 import com.db.util.BestSeller;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -35,4 +38,14 @@ public interface AccountOperationService {
     TransactionWithBLOBs getTransactionByIdService(int transaction_id);
     // 查询最高的转账对象
     List<BestSeller> searchBestSellerService(int user_id,Date start,Date end);
+    // 插入群收款请求request记录
+    int insertRequestService(Integer requesterUserId, BigDecimal totalAmount,Date requestTime, String memo);
+    // 插入群收款每个收款对象RequestContribution记录
+    int[] insertRequestContributionService(List<RequestContribution> contributions);
+    // 根据userId查找所有发起的群收款记录
+    List<Request> searchGroupRequestForRequesterByUserIdService(Integer user_id);
+    // 根据requestId查找发起的群收款记录
+    Request searchGroupRequestForRequesterById(Integer requestId);
+    // 根据requestId查找发起的群收款的每一个contribution记录
+    List<RequestContribution> searchGroupContributionForRequesterById(Integer requestId);
 }

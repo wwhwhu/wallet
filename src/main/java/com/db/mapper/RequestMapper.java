@@ -1,6 +1,10 @@
 package com.db.mapper;
 
 import com.db.entity.Request;
+import com.db.entity.TransactionWithBLOBs;
+
+import java.util.HashMap;
+import java.util.List;
 
 public interface RequestMapper {
     int deleteByPrimaryKey(Integer requestId);
@@ -10,6 +14,8 @@ public interface RequestMapper {
     int insertSelective(Request record);
 
     Request selectByPrimaryKey(Integer requestId);
+
+    List<Request> selectByUserId(Integer userId);
 
     int updateByPrimaryKeySelective(Request record);
 

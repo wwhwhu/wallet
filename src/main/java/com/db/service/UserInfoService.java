@@ -26,6 +26,8 @@ public interface UserInfoService {
     Email getTransactionUserInfoByEmail(String email);
     // 获取Email ID
     int getEmailIdByEmail(String email);
+    // 根据email_id查询email_address
+    String getEmailByEmailId(Integer emailId);
     // User表注册
     int registerUserService(String name, String ssn, String password, BigDecimal balance);
     // Phone表注册

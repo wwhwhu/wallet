@@ -1,5 +1,7 @@
 package com.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 
 public class RequestContribution {
@@ -13,6 +15,7 @@ public class RequestContribution {
 
     private Integer transactionId;
 
+    @JsonProperty("contribution_amount")
     private BigDecimal contributionAmount;
 
     private Boolean isContributed;
@@ -47,6 +50,14 @@ public class RequestContribution {
 
     public void setSenderEmailId(Integer senderEmailId) {
         this.senderEmailId = senderEmailId;
+    }
+
+    public Boolean getContributed() {
+        return isContributed;
+    }
+
+    public void setContributed(Boolean contributed) {
+        isContributed = contributed;
     }
 
     public Integer getTransactionId() {

@@ -1,13 +1,13 @@
 package com.db.controller;
 
-import com.db.entity.Email;
-import com.db.entity.TransactionWithBLOBs;
-import com.db.entity.User;
+import com.db.entity.*;
 import com.db.service.AccountOperationService;
 import com.db.service.UserInfoService;
 import com.db.util.BestSeller;
 import com.db.util.MonthStatistics;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -533,4 +533,137 @@ public class AccountOptController {
             return ResponseEntity.ok("{\"status\":0,\"data\":" + new ObjectMapper().writeValueAsString(res.get(0)) + ",\"message\":\"查询成功\"}");
         }
     }
+
+
+    @RequestMapping("/requestFromGroup")
+    public ResponseEntity<String> requestFromGroup(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException {
+        // 向一群人发起收款（单独收款是特例）
+        ObjectMapper objectMapper = new ObjectMapper();
+        //objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);   // 前端发回email_address，后端是id，不能直接映射
+        Integer requesterUserId = Integer.valueOf(jsonNode.get("user_id").asInt());
+        BigDecimal totalAmount = BigDecimal.valueOf(jsonNode.get("total_amount").asDouble());
+        String memo = jsonNode.get("memo")==null? null:jsonNode.get("memo").asText();
+
+        // 需要后端补足的值：日期，contributionId，requestId，transactionId，isContributed
+        TimeZone time = TimeZone.getTimeZone("Etc/GMT-8");  //转换为中国时区
+        TimeZone.setDefault(time);
+        Date requestTime = new Date();
+
+        // 向数据库写入request
+        int requestId = accountOptService.insertRequestService(requesterUserId, totalAmount, requestTime, memo);
+
+        // 向数据库写入contributions
+        //System.out.println("jsonNode.get:" + jsonNode.get("contributions").toString());
+        // asText, textValue失效，使用toString；映射有效字段少，直接用循环处理
+        //List<RequestContribution> contributions = objectMapper.readValue(jsonNode.get("contributions").toString(), new TypeReference<List<RequestContribution>>(){});
+        List<RequestContribution> contributions = new ArrayList<>();
+        for(JsonNode node: jsonNode.get("contributions")){
+            RequestContribution rc = new RequestContribution();
+            String senderPhoneNumber = node.get("sender_phone_number")==null? null:node.get("sender_phone_number").asText();
+            String senderEmail = node.get("sender_email")==null? null:node.get("sender_email").asText();
+            // 查错
+            int senderPhoneNumberId = 0;
+            int senderEmailId = 0;
+            if(senderPhoneNumber != null) senderPhoneNumberId = userService.getUserInfoByPhone(senderPhoneNumber);
+            if(senderEmail != null) senderEmailId = userService.getEmailIdByEmail(senderEmail);
+            // 若sender_phone_number未注册，或sender_email未注册，返回错误信息
+            if(senderPhoneNumber==null && senderEmail==null)
+                return ResponseEntity.ok("{\"status\":1,\"message\":\"非法空字段\"}");
+            else if(senderPhoneNumber==null && senderEmailId==0 || senderEmail==null && senderPhoneNumberId <= 0){
+                return ResponseEntity.ok("{\"status\":1,\"message\":\"输入的邮箱或手机号无效\"}");
+            }
+            rc.setSenderPhoneNumber(senderPhoneNumber);
+            rc.setSenderEmailId(senderEmailId==0?null:senderEmailId);
+            rc.setRequestId(requestId);
+            rc.setContributionAmount(BigDecimal.valueOf(node.get("contribution_amount").asDouble()));
+            rc.setIsContributed(false);
+            contributions.add(rc);
+        }
+        //System.out.println("contributions:"+contributions);
+        // 可通过contributionIds获取刚刚成功发起的群收款整体情况
+        int[] contributionIds = accountOptService.insertRequestContributionService(contributions);
+
+        return ResponseEntity.ok("{\"status\":0,\"message\":\"ok\"}");
+    }
+
+
+    @RequestMapping("/searchGroupRequestForRequesterByUserId")
+    public ResponseEntity<String> searchGroupRequestForRequesterByUserId(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
+        // 查看我发起的所有群收款（强调发起：所以前端给的是requesterUserId）
+        // 有个bug：返回的时间是按秒算的！！
+        Integer requesterUserId = jsonNode.get("user_id").asInt();
+        List<Request> res = accountOptService.searchGroupRequestForRequesterByUserIdService(requesterUserId);
+        if(res == null)
+        {
+            return ResponseEntity.ok("{\"status\":1,\"message\":\"查询失败\"}");
+        }
+        else if(res.isEmpty())
+        {
+            return ResponseEntity.ok("{\"status\":1,\"message\":\"查询结果为空\"}");
+        }else{
+            return ResponseEntity.ok("{\"status\":0,\"data\":"+new ObjectMapper().writeValueAsString(res)+",\"message\":\"查询成功\"}");
+        }
+    }
+
+
+    @RequestMapping("/searchGroupContributionForRequesterById")
+    public ResponseEntity<String> searchGroupContributionForRequesterById(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
+        // 查询指定id的群收款（具体到每一条contribution）
+        // 前端有误：应当是返回contributions数组
+        Integer requestId = jsonNode.get("request_id").asInt();
+        List<RequestContribution> requestContributions = accountOptService.searchGroupContributionForRequesterById(requestId);
+        // 将有sender_email_id的，改成对应的sender_email(email_address)，需要重新封装对象
+        class Res{
+            private Integer contribution_id;
+            private String sender_phone_number;
+            private String sender_email;
+            private Integer transaction_id;
+            private BigDecimal contribution_amount;
+            private Boolean is_contributed;
+            public Integer getContribution_id() {return contribution_id;}
+            public void setContribution_id(Integer contribution_id) {this.contribution_id = contribution_id;}
+            public String getSender_phone_number() {return sender_phone_number;}
+            public void setSender_phone_number(String sender_phone_number) {this.sender_phone_number = sender_phone_number;}
+            public String getSender_email() {return sender_email;}
+            public void setSender_email(String sender_email) {this.sender_email = sender_email;}
+            public Integer getTransaction_id() {return transaction_id;}
+            public void setTransaction_id(Integer transaction_id) {this.transaction_id = transaction_id;}
+            public BigDecimal getContribution_amount() {return contribution_amount;}
+            public void setContribution_amount(BigDecimal contribution_amount) {this.contribution_amount = contribution_amount;}
+            public Boolean getIs_contributed() {return is_contributed;}
+            public void setIs_contributed(Boolean is_contributed) {this.is_contributed = is_contributed;}
+        }
+        List<Res> ress = new ArrayList<>();
+        for(RequestContribution rc: requestContributions){
+            Res res = new Res();
+            res.setContribution_id(rc.getContributionId());
+            res.setSender_phone_number(rc.getSenderPhoneNumber());
+            res.setSender_email(rc.getSenderEmailId()==null?null:userService.getEmailByEmailId(rc.getSenderEmailId()));
+            res.setTransaction_id(rc.getTransactionId());
+            res.setContribution_amount(rc.getContributionAmount());
+            res.setIs_contributed(rc.getIsContributed());
+            ress.add(res);
+        }
+        if(requestContributions.isEmpty())
+        {
+            return ResponseEntity.ok("{\"status\":1,\"message\":\"查询结果为空\"}");
+        }else
+            return ResponseEntity.ok("{\"status\":0,\"data\":" + new ObjectMapper().writeValueAsString(ress) + ",\"message\":\"查询成功\"}");
+    }
+
+
+    /*
+    @RequestMapping("/sendForGroup")
+    public ResponseEntity<String> sendForGroup(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
+        // 向单条群收款付钱
+    }
+
+
+    @RequestMapping("/searchGroupRequestForSender")
+    public ResponseEntity<String> searchGroupRequestForRequester(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
+        // 查看所有我收到的群收款（未付款和已付款都有）
+    }
+     */
+
+
 }

@@ -20,6 +20,12 @@
     from RequestContribution
     where contribution_id = #{contributionId,jdbcType=INTEGER}
   </select>
+  <select id="selectByRequestId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from RequestContribution
+    where request_id = #{requestId,jdbcType=INTEGER}
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from RequestContribution
     where contribution_id = #{contributionId,jdbcType=INTEGER}
@@ -31,6 +37,9 @@
     values (#{contributionId,jdbcType=INTEGER}, #{requestId,jdbcType=INTEGER}, #{senderPhoneNumber,jdbcType=VARCHAR}, 
       #{senderEmailId,jdbcType=INTEGER}, #{transactionId,jdbcType=INTEGER}, #{contributionAmount,jdbcType=DECIMAL}, 
       #{isContributed,jdbcType=BIT})
+    <selectKey resultType="int" keyProperty="contributionId" order="AFTER">
+      select LAST_INSERT_ID()
+    </selectKey>
   </insert>
   <insert id="insertSelective" parameterType="com.db.entity.RequestContribution">
     insert into RequestContribution
