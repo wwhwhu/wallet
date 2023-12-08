@@ -208,7 +208,7 @@ public class AccountOptController {
 
     @RequestMapping("/searchTransactionPerMonth")
     public ResponseEntity<String> searchTransactionPerMonth(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException {
-        // 统计以开始时间为准的一个月内的交易记录
+        // 统计以开始时间为准的一个月内的交易记录（包含已取消的）
         String user_id = jsonNode.get("user_id").asText();
         String password = jsonNode.get("password").asText();
         String year = jsonNode.get("year").asText();
@@ -310,7 +310,7 @@ public class AccountOptController {
 
     @RequestMapping("/searchTransactionByEmail")
     public ResponseEntity<String> searchTransactionByEmail(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException {
-        // 通过Email查询交易记录
+        // 通过Email查询交易记录（user_id：支付者，email_address：收款方）
         String user_id = jsonNode.get("user_id").asText();
         String password = jsonNode.get("password").asText();
         String email = jsonNode.get("email_address").asText();
@@ -498,7 +498,7 @@ public class AccountOptController {
     @RequestMapping("/searchBestSeller")
     public ResponseEntity<String> searchBestSeller(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException {
         // 查询最佳卖家
-        String user_id = jsonNode.get("user_id").asText();
+        Integer user_id = jsonNode.get("user_id").asInt();
         String password = jsonNode.get("password").asText();
         String start = jsonNode.get("start").asText();
         String end = jsonNode.get("end").asText();
@@ -517,20 +517,23 @@ public class AccountOptController {
         } catch (ParseException e) {
             return ResponseEntity.ok("{\"status\":1,\"message\":\"日期格式错误\"}");
         }
-        User nowUser = userService.findUserPasswordService(Integer.parseInt(user_id));
+        User nowUser = userService.findUserPasswordService(user_id);
         String realPassword = nowUser.getPassword();
         if (!password.equals(realPassword)) {
             String jsonResponse = "{\"status\":1,\"message\":\"密码输入错误\"}";
             return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
         }
-        List<BestSeller> res = accountOptService.searchBestSellerService(Integer.parseInt(user_id), startDate, endDate);
+        //List<BestSeller> res = accountOptService.searchBestSellerService(Integer.parseInt(user_id), startDate, endDate);
+        List<BigDecimal> res = accountOptService.searchBestSellerService(user_id, startDate, endDate);
         if (res == null) {
             return ResponseEntity.ok("{\"status\":1,\"message\":\"查询失败\"}");
-        } else if (res.size() == 0) {
+        } else if (res.isEmpty()) {
             return ResponseEntity.ok("{\"status\":1,\"message\":\"查询结果为空\"}");
         } else {
-            res.get(0).setName(userService.findUserPasswordService(res.get(0).getRecipientUserId()).getName());
-            return ResponseEntity.ok("{\"status\":0,\"data\":" + new ObjectMapper().writeValueAsString(res.get(0)) + ",\"message\":\"查询成功\"}");
+            //res.get(0).setName(userService.findUserPasswordService(res.get(0).getRecipientUserId()).getName());
+            //return ResponseEntity.ok("{\"status\":0,\"data\":" + new ObjectMapper().writeValueAsString(res.get(0)) + ",\"message\":\"查询成功\"}");
+            String name = userService.getNameByUserId(user_id);
+            return ResponseEntity.ok("{\"status\":0,\"data\":\"totalAmount\":" + res.get(0) + ", \"name\":"+ name +"},\"message\":\"查询成功\"}");
         }
     }
 

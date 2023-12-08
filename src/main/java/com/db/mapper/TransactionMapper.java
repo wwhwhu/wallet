@@ -4,6 +4,7 @@ import com.db.entity.Transaction;
 import com.db.entity.TransactionWithBLOBs;
 import com.db.util.BestSeller;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -39,5 +40,5 @@ public interface TransactionMapper {
 
     List<TransactionWithBLOBs> selectCancelledTransaction(int user_id);
 
-    List<BestSeller> selectBestSeller(HashMap<String, Object> map);
+    List<BigDecimal> selectBestSeller(HashMap<String, Object> map);
 }
