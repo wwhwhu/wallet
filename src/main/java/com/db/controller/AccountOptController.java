@@ -587,12 +587,12 @@ public class AccountOptController {
     }
 
 
-    @RequestMapping("/searchGroupRequestForRequesterByUserId")
-    public ResponseEntity<String> searchGroupRequestForRequesterByUserId(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
+    @RequestMapping("/searchGroupRequestByUserId")
+    public ResponseEntity<String> searchGroupRequestByUserId(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
         // 查看我发起的所有群收款（强调发起：所以前端给的是requesterUserId）
         // 有个bug：返回的时间是按秒算的！！
         Integer requesterUserId = jsonNode.get("user_id").asInt();
-        List<Request> res = accountOptService.searchGroupRequestForRequesterByUserIdService(requesterUserId);
+        List<Request> res = accountOptService.searchGroupRequestByUserIdService(requesterUserId);
         if(res == null)
         {
             return ResponseEntity.ok("{\"status\":1,\"message\":\"查询失败\"}");
@@ -606,12 +606,12 @@ public class AccountOptController {
     }
 
 
-    @RequestMapping("/searchGroupContributionForRequesterById")
-    public ResponseEntity<String> searchGroupContributionForRequesterById(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
-        // 查询指定id的群收款（具体到每一条contribution）
+    @RequestMapping("/searchGroupContributionByRequestId")
+    public ResponseEntity<String> searchGroupContributionByRequestId(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
+        // 查询指定requestId的群收款（具体到每一条contribution）
         // 前端有误：应当是返回contributions数组
         Integer requestId = jsonNode.get("request_id").asInt();
-        List<RequestContribution> requestContributions = accountOptService.searchGroupContributionForRequesterById(requestId);
+        List<RequestContribution> requestContributions = accountOptService.searchGroupContributionByRequestIdService(requestId);
         // 将有sender_email_id的，改成对应的sender_email(email_address)，需要重新封装对象
         class Res{
             private Integer contribution_id;
@@ -652,18 +652,155 @@ public class AccountOptController {
     }
 
 
-    /*
     @RequestMapping("/sendForGroup")
     public ResponseEntity<String> sendForGroup(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
         // 向单条群收款付钱
+        Integer send_id = jsonNode.get("user_id").asInt();
+        Integer contributionId = jsonNode.get("contribution_id").asInt();
+        String memo = jsonNode.get("memo")==null? null:jsonNode.get("memo").asText();
+        String password = jsonNode.get("password").asText();
+        boolean isPayByWallet = jsonNode.get("isPayByWallet").asBoolean();
+        TimeZone time = TimeZone.getTimeZone("Etc/GMT-8");  //转换为中国时区
+        TimeZone.setDefault(time);
+        Date startTime = new Date();
+        // 获取该条contribution支付方和收款方信息
+        RequestContribution rc = accountOptService.searchGroupContributionByContributionIdService(contributionId);
+        Request request = accountOptService.searchGroupRequestByRequestIdService(rc.getRequestId());
+        memo = request.getMemo();
+
+        // 查错（这个过程，不是应该由前端逻辑已经保证了传回来的是有效字段吗？？）
+        if(rc.getTransactionId()!=null) return ResponseEntity.ok("{\"status\":1,\"message\":\"该项群收款已支付过\"}");
+        else if (password == null || password.isEmpty()) {
+            return ResponseEntity.ok("{\"status\":1,\"message\":\"非法空字段\"}");
+        }
+        User nowUser = userService.findUserPasswordService(send_id);
+        String realPassword = nowUser.getPassword();
+        if (!password.equals(realPassword)) {
+            String jsonResponse = "{\"status\":1,\"message\":\"密码输入错误\"}";
+            return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
+        }
+
+        // 插入transaction记录开始（成功返回的是该条transaction记录的transaction_id）
+        // 使用电子钱包付款
+        if(isPayByWallet)
+        {
+            BigDecimal walletMoney = nowUser.getBalance();
+            if(walletMoney.compareTo(rc.getContributionAmount())<0)
+            {
+                return ResponseEntity.ok("{\"status\":1,\"message\":\"电子钱包余额不足\"}");
+            }else{
+                // 更新付款方电子钱包
+                BigDecimal newWalletMoney = walletMoney.subtract(rc.getContributionAmount());
+                int res = userService.updateBalanceByUserId(send_id, newWalletMoney);
+                if(res == 0) return ResponseEntity.ok("{\"status\":1,\"message\":\"使用电子钱包支付失败\"}");
+                // 更新收款方电子钱包
+                BigDecimal otherMoney = userService.findUserPasswordService(request.getRequesterUserId()).getBalance();
+                BigDecimal newOtherMoney = otherMoney.add(rc.getContributionAmount());
+                int res1 = userService.updateBalanceByUserId(request.getRequesterUserId(), newOtherMoney);
+                if(res1 == 0){
+                    // 付款方事务回滚
+                    userService.updateBalanceByUserId(send_id, walletMoney);
+                    return ResponseEntity.ok("{\"status\":1,\"message\":\"使用电子钱包支付更新收款方余额失败\"}");
+                }
+                // 插入transaction记录
+                int res2 = accountOptService.insertTransactionService(send_id, request.getRequesterUserId(), rc.getContributionAmount().doubleValue(), memo, null, null, startTime);
+                if(res2==0){
+                    // 插入记录失败，回滚付款方和收款方事务
+                    userService.updateBalanceByUserId(send_id, walletMoney);
+                    userService.updateBalanceByUserId(request.getRequesterUserId(), otherMoney);
+                    return ResponseEntity.ok("{\"status\":1,\"message\":\"使用电子钱包支付插入交易记录失败\"}");
+                }
+                accountOptService.recordEndTimeTransactionService(res2);
+                // 更新RequestContribution表记录（添加transaction_id）
+                accountOptService.updateGroupContributionService(contributionId, res2);
+                return ResponseEntity.ok("{\"status\":0,\"data\":"+res2+",\"message\":\"使用电子钱包支付成功\"}");
+            }
+        }
+
+        // 使用银行卡支付（前端还需提供支付方式，phone_number或email_address！！由于未提供，此处实现考虑用contribution表记录的方式）
+        // 银行方面的操作默认成功，也即只要收款方wallet能收到，则记入新的transaction记录
+        Integer emailId = rc.getSenderEmailId();
+        String phoneNumber = rc.getSenderPhoneNumber();
+
+        // 增加收款方余额（默认转入其钱包账户）
+        BigDecimal otherMoney = userService.findUserPasswordService(request.getRequesterUserId()).getBalance();
+        BigDecimal newOtherMoney = otherMoney.add(rc.getContributionAmount());
+        int res = userService.updateBalanceByUserId(request.getRequesterUserId(), newOtherMoney);
+        if(res == 0) return ResponseEntity.ok("{\"status\":1,\"message\":\"使用银行卡支付更新收款方余额失败\"}");
+
+        int res1;
+        // 使用银行卡：按照手机号付款
+        if (emailId == null) res1 = accountOptService.insertTransactionService(send_id, request.getRequesterUserId(), rc.getContributionAmount().doubleValue(), memo, null, phoneNumber, startTime);
+        // 使用银行卡：按照Email付款（若电话和邮件都填了，就默认用邮件支付）
+        else res1 = accountOptService.insertTransactionService(send_id, request.getRequesterUserId(), rc.getContributionAmount().doubleValue(), memo, emailId, null, startTime);
+        // 支付失败：收款方事务回滚
+        if(res1 == 0){
+            userService.updateBalanceByUserId(request.getRequesterUserId(), otherMoney);
+            return ResponseEntity.ok("{\"status\":1,\"message\":\"使用银行卡支付失败\"}");
+        }
+
+        accountOptService.recordEndTimeTransactionService(res1);
+        // 更新RequestContribution表记录（添加transaction_id）
+        accountOptService.updateGroupContributionService(contributionId, res1);
+        return ResponseEntity.ok("{\"status\":0,\"data\":"+res1+",\"message\":\"基于手机号或邮件支付成功\"}");
     }
 
 
-    @RequestMapping("/searchGroupRequestForSender")
-    public ResponseEntity<String> searchGroupRequestForRequester(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
+    @RequestMapping("/searchGroupRequestBySenderId")
+    public ResponseEntity<String> searchGroupRequestBySenderId(@RequestBody JsonNode jsonNode, HttpSession session) throws JsonProcessingException{
         // 查看所有我收到的群收款（未付款和已付款都有）
+        Integer user_id = jsonNode.get("user_id").asInt();
+        int[] emailIds = userService.getEmailIdByUserId(user_id);
+        String phoneNumber = userService.getPhoneByUserId(user_id);
+
+        List<RequestContribution> rcs = new ArrayList<>();
+        List<RequestContribution> contributions1 = accountOptService.searchGroupContributionByPhoneService(phoneNumber);
+        if(contributions1!=null && !contributions1.isEmpty()) rcs.addAll(contributions1);
+        for(int emailId: emailIds){
+            List<RequestContribution> contributions2 = accountOptService.searchGroupContributionByEmailIdService(emailId);
+            if(contributions2!=null && !contributions2.isEmpty()) rcs.addAll(contributions2);
+        }
+
+        // 返回新结构体
+        class Res{
+            private Integer request_id;
+            private Integer contribution_id;
+            private String name;    // 收款人
+            private BigDecimal contribution_amount;
+            private String memo;
+            private Date request_time;
+
+            public Integer getRequest_id() {return request_id;}
+            public void setRequest_id(Integer request_id) {this.request_id = request_id;}
+            public Integer getContribution_id() {return contribution_id;}
+            public void setContribution_id(Integer contribution_id) {this.contribution_id = contribution_id;}
+            public String getName() {return name;}
+            public void setName(String name) {this.name = name;}
+            public BigDecimal getContribution_amount() {return contribution_amount;}
+            public void setContribution_amount(BigDecimal contribution_amount) {this.contribution_amount = contribution_amount;}
+            public String getMemo() {return memo;}
+            public void setMemo(String memo) {this.memo = memo;}
+            public Date getRequest_time() {return request_time;}
+            public void setRequest_time(Date request_time) {this.request_time = request_time;}
+        }
+        List<Res> ress = new ArrayList<>();
+        for(RequestContribution rc: rcs){
+            Res res = new Res();
+            res.setRequest_id(rc.getRequestId());
+            res.setContribution_id(rc.getContributionId());
+            res.setContribution_amount(rc.getContributionAmount());
+            res.setMemo(accountOptService.searchGroupRequestByRequestIdService(rc.getRequestId()).getMemo());
+            res.setRequest_time(accountOptService.searchGroupRequestByRequestIdService(rc.getRequestId()).getRequestTime());
+            res.setName(userService.getNameByUserId(accountOptService.searchGroupRequestByRequestIdService(rc.getRequestId()).getRequesterUserId()));
+            ress.add(res);
+        }
+        if(ress.isEmpty())
+        {
+            return ResponseEntity.ok("{\"status\":1,\"message\":\"查询结果为空\"}");
+        }else{
+            return ResponseEntity.ok("{\"status\":0,\"data\":"+new ObjectMapper().writeValueAsString(ress)+",\"message\":\"查询成功\"}");
+        }
     }
-     */
 
 
 }

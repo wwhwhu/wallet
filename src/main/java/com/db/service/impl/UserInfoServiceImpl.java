@@ -133,6 +133,18 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
+    public int[] getEmailIdByUserId(Integer user_id){
+        List<Email> emails = emailMapper.selectByUserId(user_id);
+        if(emails.isEmpty())
+            return null;
+        int[] res = new int[emails.size()];
+        for(int i=0;i<emails.size();i++){
+            res[i] = emails.get(i).getEmailId();
+        }
+        return res;
+    }
+
+    @Override
     public int registerUserService(String name, String ssn, String password, BigDecimal balance) {
         User u = new User();
         u.setName(name);
@@ -414,13 +426,17 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public int getPhoneByUserId(Integer userId) {
+    public String getPhoneByUserId(Integer userId) {
         PhoneNumber res = phoneNumber.selectPhoneByUser(userId);
-        if(res==null)
-        {
-            return 0;
-        }
-        return 1;
+        if(res==null) return null;
+        return res.getPhoneNumber();
+    }
+
+    @Override
+    public String getNameByUserId(Integer userId){
+        User user = userMapper.selectByPrimaryKey(userId);
+        if(user == null) return null;
+        return user.getName();
     }
 
     @Override

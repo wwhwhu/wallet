@@ -2,6 +2,8 @@ package com.db.mapper;
 
 import com.db.entity.Email;
 
+import java.util.List;
+
 public interface EmailMapper {
     int deleteByPrimaryKey(Integer emailId);
 
@@ -16,6 +18,8 @@ public interface EmailMapper {
     int updateByPrimaryKey(Email record);
 
     Email selectByEmailAddress(String email);
+
+    List<Email> selectByUserId(Integer userId);
 
     int updateEmailUser(Email record);
 

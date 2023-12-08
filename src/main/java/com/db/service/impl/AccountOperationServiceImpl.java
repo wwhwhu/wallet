@@ -229,17 +229,40 @@ public class AccountOperationServiceImpl implements AccountOperationService {
     }
 
     @Override
-    public List<Request> searchGroupRequestForRequesterByUserIdService(Integer user_id){
+    public List<Request> searchGroupRequestByUserIdService(Integer user_id){
         return requestMapper.selectByUserId(user_id);
     }
 
     @Override
-    public Request searchGroupRequestForRequesterById(Integer requestId){
+    public Request searchGroupRequestByRequestIdService(Integer requestId){
         return requestMapper.selectByPrimaryKey(requestId);
     }
 
     @Override
-    public List<RequestContribution> searchGroupContributionForRequesterById(Integer requestId){
+    public List<RequestContribution> searchGroupContributionByRequestIdService(Integer requestId){
         return requestContributionMapper.selectByRequestId(requestId);
+    }
+
+    @Override
+    public List<RequestContribution> searchGroupContributionByEmailIdService(Integer emailId){
+        return requestContributionMapper.selectByEmailId(emailId);
+    }
+
+    @Override
+    public List<RequestContribution> searchGroupContributionByPhoneService(String phoneNumber){
+        return requestContributionMapper.selectByPhone(phoneNumber);
+    }
+
+    @Override
+    public RequestContribution searchGroupContributionByContributionIdService(Integer contributionId){
+        return requestContributionMapper.selectByPrimaryKey(contributionId);
+    }
+
+    @Override
+    public int updateGroupContributionService(Integer contributionId, Integer transactionId){
+        RequestContribution rc = new RequestContribution();
+        rc.setContributionId(contributionId);
+        rc.setTransactionId(transactionId);
+        return requestContributionMapper.updateByPrimaryKeySelective(rc);
     }
 }

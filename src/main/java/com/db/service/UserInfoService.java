@@ -28,6 +28,8 @@ public interface UserInfoService {
     int getEmailIdByEmail(String email);
     // 根据email_id查询email_address
     String getEmailByEmailId(Integer emailId);
+    // 根据user_id查询email_id
+    int[] getEmailIdByUserId(Integer user_id);
     // User表注册
     int registerUserService(String name, String ssn, String password, BigDecimal balance);
     // Phone表注册
@@ -65,7 +67,9 @@ public interface UserInfoService {
     // 根据user_id获取balance
     BigDecimal getBalanceByUserId(Integer userId);
     // 根据user_id获取手机号
-    int getPhoneByUserId(Integer userId);
+    String getPhoneByUserId(Integer userId);
+    // 根据user_id获取用户名
+    String getNameByUserId(Integer userId);
     // 根据user_id更新balance
     int updateBalanceByUserId(Integer userId, BigDecimal balance);
     // 根据phone获取所有的未完成Transaction

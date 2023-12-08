@@ -403,8 +403,8 @@ public class UserController {
                 }
                 return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
             } else {
-                // 判断该用户是否已经有手机绑定
-                if(userService.getPhoneByUserId(Integer.parseInt(user_id))==1){
+                // 判断该用户是否已经有手机绑定（修改了PhoneNumberMapper，方法返回的是手机号码而不是0和1）
+                if(userService.getPhoneByUserId(Integer.parseInt(user_id))!=null){
                     jsonResponse = "{\"status\":1,\"message\":\"该用户已经有手机绑定，无法继续绑定\"}";
                     return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
                 }

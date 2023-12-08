@@ -15,6 +15,10 @@ public interface RequestContributionMapper {
 
     List<RequestContribution> selectByRequestId(Integer requestId);
 
+    List<RequestContribution> selectByEmailId(Integer senderEmailId);
+
+    List<RequestContribution> selectByPhone(String senderPhoneNumber);
+
     int updateByPrimaryKeySelective(RequestContribution record);
 
     int updateByPrimaryKey(RequestContribution record);

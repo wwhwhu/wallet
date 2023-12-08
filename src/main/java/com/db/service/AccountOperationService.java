@@ -43,9 +43,17 @@ public interface AccountOperationService {
     // 插入群收款每个收款对象RequestContribution记录
     int[] insertRequestContributionService(List<RequestContribution> contributions);
     // 根据userId查找所有发起的群收款记录
-    List<Request> searchGroupRequestForRequesterByUserIdService(Integer user_id);
+    List<Request> searchGroupRequestByUserIdService(Integer user_id);
     // 根据requestId查找发起的群收款记录
-    Request searchGroupRequestForRequesterById(Integer requestId);
+    Request searchGroupRequestByRequestIdService(Integer requestId);
     // 根据requestId查找发起的群收款的每一个contribution记录
-    List<RequestContribution> searchGroupContributionForRequesterById(Integer requestId);
+    List<RequestContribution> searchGroupContributionByRequestIdService(Integer requestId);
+    // 根据emailId查找收到的群收款的每一个contribution记录
+    List<RequestContribution> searchGroupContributionByEmailIdService(Integer emailId);
+    // 根据phoneNumber查找收到的群收款的每一个contribution记录
+    List<RequestContribution> searchGroupContributionByPhoneService(String phoneNumber);
+    // 根据contribution_id查找一条contribution记录
+    RequestContribution searchGroupContributionByContributionIdService(Integer contributionId);
+    // 支付群收款后更新contribution记录
+    int updateGroupContributionService(Integer contributionId, Integer transactionId);
 }
