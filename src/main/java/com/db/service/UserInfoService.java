@@ -28,6 +28,8 @@ public interface UserInfoService {
     int getEmailIdByEmail(String email);
     // 根据email_id查询email_address
     String getEmailByEmailId(Integer emailId);
+    // 根据email_id在两个表里面查询email_address
+    String getEmailByEmailId2(Integer emailId);
     // 根据user_id查询email_id
     int[] getEmailIdByUserId(Integer user_id);
     // User表注册

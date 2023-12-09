@@ -101,27 +101,27 @@
     where sender_user_id = #{userId,jdbcType=INTEGER} or recipient_user_id = #{receiveId,jdbcType=INTEGER}
   </select>
 <!--  原逻辑：找与user_id交易的人中收钱最多的人-->
-<!--  <select id="selectBestSeller" parameterType="map" resultType="com.db.util.BestSeller">-->
-<!--      SELECT T2.recipient_user_id, SUM(T2.amount) AS total_amount-->
-<!--      FROM Transaction T2-->
-<!--      WHERE-->
-<!--        T2.sender_user_id = #{userId,jdbcType=INTEGER}-->
-<!--        AND T2.transaction_start_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}-->
-<!--      GROUP BY T2.recipient_user_id-->
-<!--      ORDER BY SUM(T2.amount) DESC;-->
-<!--  </select>-->
-<!--  修改为：所有人中，总的支出+收入金额最多的那个人-->
-  <select id="selectBestSeller" parameterType="map" resultType="java.math.BigDecimal">
-    SELECT SUM(T.amount) AS total_amount
-    FROM Transaction T
-    WHERE
-      (T.sender_user_id = #{userId,jdbcType=INTEGER}
-        AND T.transaction_start_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP})
-    or
-      (T.recipient_user_id = #{userId,jdbcType=INTEGER}
-        AND T.transaction_start_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP})
-    ORDER BY SUM(T.amount) DESC
+  <select id="selectBestSeller" parameterType="map" resultType="com.db.util.BestSeller">
+      SELECT T2.recipient_user_id, SUM(T2.amount) AS total_amount
+      FROM Transaction T2
+      WHERE
+        T2.sender_user_id = #{userId,jdbcType=INTEGER}
+        AND T2.transaction_start_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}
+      GROUP BY T2.recipient_user_id
+      ORDER BY SUM(T2.amount) DESC;
   </select>
+<!--  修改为：所有人中，总的支出+收入金额最多的那个人-->
+<!--  <select id="selectBestSeller" parameterType="map" resultType="java.math.BigDecimal">-->
+<!--    SELECT SUM(T.amount) AS total_amount-->
+<!--    FROM Transaction T-->
+<!--    WHERE-->
+<!--      (T.sender_user_id = #{userId,jdbcType=INTEGER}-->
+<!--        AND T.transaction_start_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP})-->
+<!--    or-->
+<!--      (T.recipient_user_id = #{userId,jdbcType=INTEGER}-->
+<!--        AND T.transaction_start_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP})-->
+<!--    ORDER BY SUM(T.amount) DESC-->
+<!--  </select>-->
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from Transaction
     where transaction_id = #{transactionId,jdbcType=INTEGER}

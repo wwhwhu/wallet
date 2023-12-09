@@ -196,7 +196,7 @@ public class AccountOperationServiceImpl implements AccountOperationService {
     }
 
     @Override
-    public List<BigDecimal> searchBestSellerService(int user_id, Date start, Date end) {
+    public List<BestSeller> searchBestSellerService(Integer user_id, Date start, Date end) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("userId", user_id);
         map.put("startTime", start);

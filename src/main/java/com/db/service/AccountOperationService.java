@@ -37,7 +37,7 @@ public interface AccountOperationService {
     // 根据TransactionId查找Transaction记录
     TransactionWithBLOBs getTransactionByIdService(int transaction_id);
     // 查询最高的转账对象
-    List<BigDecimal> searchBestSellerService(int user_id,Date start,Date end);
+    List<BestSeller> searchBestSellerService(Integer user_id,Date start,Date end);
     // 插入群收款请求request记录
     int insertRequestService(Integer requesterUserId, BigDecimal totalAmount,Date requestTime, String memo);
     // 插入群收款每个收款对象RequestContribution记录

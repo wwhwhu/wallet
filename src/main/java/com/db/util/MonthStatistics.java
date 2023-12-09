@@ -20,16 +20,16 @@ public class MonthStatistics {
     // 交易总次数
     int totalTimes;
 
-    public List<TransactionWithBLOBs> getMonthStatisticsList() {
+    public List<Transinfo> getMonthStatisticsList() {
         return monthStatisticsList;
     }
 
-    public void setMonthStatisticsList(List<TransactionWithBLOBs> monthStatisticsList) {
+    public void setMonthStatisticsList(List<Transinfo> monthStatisticsList) {
         this.monthStatisticsList = monthStatisticsList;
     }
 
     // 交易记录
-    List<TransactionWithBLOBs> monthStatisticsList;
+    List<Transinfo> monthStatisticsList;
 
     public int getYear() {
         return year;

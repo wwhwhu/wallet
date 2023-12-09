@@ -133,6 +133,15 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
+    public String getEmailByEmailId2(Integer emailId) {
+        Email res = emailMapper.selectByPrimaryKey(emailId);
+        if(res!=null)
+            return res.getEmailAddress();
+        DeleteEmail res2 = deleteEmailMapper.selectByPrimaryKey(emailId);
+        return res2.getEmailAddress();
+    }
+
+    @Override
     public int[] getEmailIdByUserId(Integer user_id){
         List<Email> emails = emailMapper.selectByUserId(user_id);
         if(emails.isEmpty())

@@ -40,5 +40,5 @@ public interface TransactionMapper {
 
     List<TransactionWithBLOBs> selectCancelledTransaction(int user_id);
 
-    List<BigDecimal> selectBestSeller(HashMap<String, Object> map);
+    List<BestSeller> selectBestSeller(HashMap<String, Object> map);
 }

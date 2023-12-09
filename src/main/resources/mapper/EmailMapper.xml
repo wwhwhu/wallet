@@ -17,6 +17,7 @@
     from Email
     where email_id = #{emailId,jdbcType=INTEGER}
   </select>
+
   <select id="selectByEmailAddress" parameterType="java.lang.String" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
