@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 @RestController
+@CrossOrigin
 @RequestMapping(value = "/api", produces = "application/json;charset=UTF-8")
 public class AccountOptController {
     private final AccountOperationService accountOptService;
@@ -522,10 +524,9 @@ public class AccountOptController {
         } else if (res.isEmpty()) {
             return ResponseEntity.ok("{\"status\":1,\"message\":\"查询结果为空\"}");
         } else {
-            //res.get(0).setName(userService.findUserPasswordService(res.get(0).getRecipientUserId()).getName());
+            res.get(0).setName(userService.findUserPasswordService(res.get(0).getRecipientUserId()).getName());
             //return ResponseEntity.ok("{\"status\":0,\"data\":" + new ObjectMapper().writeValueAsString(res.get(0)) + ",\"message\":\"查询成功\"}");
-            String name = userService.getNameByUserId(user_id);
-            return ResponseEntity.ok("{\"status\":0,\"data\":\"totalAmount\":" + res.get(0) + ", \"name\":" + name + "},\"message\":\"查询成功\"}");
+            return ResponseEntity.ok("{\"status\":0,\"data\":" + new ObjectMapper().writeValueAsString(res.get(0)) + ",\"message\":\"查询成功\"}");
         }
     }
 
@@ -733,7 +734,8 @@ public class AccountOptController {
                 }
                 accountOptService.recordEndTimeTransactionService(res2);
                 // 更新RequestContribution表记录（添加transaction_id）
-                accountOptService.updateGroupContributionService(contributionId, res2);
+                boolean isContribute = true;
+                accountOptService.updateGroupContributionService(contributionId, res2, isContribute);
                 return ResponseEntity.ok("{\"status\":0,\"data\":" + res2 + ",\"message\":\"使用电子钱包支付成功\"}");
             }
         }
@@ -764,7 +766,8 @@ public class AccountOptController {
 
         accountOptService.recordEndTimeTransactionService(res1);
         // 更新RequestContribution表记录（添加transaction_id）
-        accountOptService.updateGroupContributionService(contributionId, res1);
+        boolean isContribute = true;
+        accountOptService.updateGroupContributionService(contributionId, res1, isContribute);
         return ResponseEntity.ok("{\"status\":0,\"data\":" + res1 + ",\"message\":\"基于手机号或邮件支付成功\"}");
     }
 
@@ -791,6 +794,7 @@ public class AccountOptController {
             private BigDecimal contribution_amount;
             private String memo;
             private Date request_time;
+            private boolean is_contributed;
 
             public Integer getRequest_id() {
                 return request_id;
@@ -839,6 +843,14 @@ public class AccountOptController {
             public void setRequest_time(Date request_time) {
                 this.request_time = request_time;
             }
+
+            public boolean getIs_contributed() {
+                return is_contributed;
+            }
+
+            public void setIs_contributed(boolean is_contribute) {
+                this.is_contributed = is_contribute;
+            }
         }
         List<Res> ress = new ArrayList<>();
         for (RequestContribution rc : rcs) {
@@ -849,6 +861,7 @@ public class AccountOptController {
             res.setMemo(accountOptService.searchGroupRequestByRequestIdService(rc.getRequestId()).getMemo());
             res.setRequest_time(accountOptService.searchGroupRequestByRequestIdService(rc.getRequestId()).getRequestTime());
             res.setName(userService.getNameByUserId(accountOptService.searchGroupRequestByRequestIdService(rc.getRequestId()).getRequesterUserId()));
+            res.setIs_contributed(rc.getIsContributed());
             ress.add(res);
         }
         if (ress.isEmpty()) {

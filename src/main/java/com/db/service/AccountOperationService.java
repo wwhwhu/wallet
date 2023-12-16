@@ -55,5 +55,5 @@ public interface AccountOperationService {
     // 根据contribution_id查找一条contribution记录
     RequestContribution searchGroupContributionByContributionIdService(Integer contributionId);
     // 支付群收款后更新contribution记录
-    int updateGroupContributionService(Integer contributionId, Integer transactionId);
+    int updateGroupContributionService(Integer contributionId, Integer transactionId, boolean isContributed);
 }

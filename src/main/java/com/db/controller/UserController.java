@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 @RestController
+@CrossOrigin
 @RequestMapping(value = "/api", produces = "application/json;charset=UTF-8")
 public class UserController {
 

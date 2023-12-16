@@ -261,10 +261,11 @@ public class AccountOperationServiceImpl implements AccountOperationService {
     }
 
     @Override
-    public int updateGroupContributionService(Integer contributionId, Integer transactionId){
+    public int updateGroupContributionService(Integer contributionId, Integer transactionId, boolean isPaid){
         RequestContribution rc = new RequestContribution();
         rc.setContributionId(contributionId);
         rc.setTransactionId(transactionId);
+        rc.setContributed(isPaid);
         return requestContributionMapper.updateByPrimaryKeySelective(rc);
     }
 }
